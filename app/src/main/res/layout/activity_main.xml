@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Better Target Lock"
+            android:layout_marginStart="10dp"
+            android:textSize="20sp" />
+        <Switch
+            android:id="@+id/striker_lock"
+            android:layout_width="match_parent"
+            android:layout_height="73dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:text="@string/striker"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+        <Switch
+            android:layout_width="match_parent"
+            android:layout_height="73dp"
+            android:id="@+id/scorpio_lock"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:text="@string/scorpio"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Remember Targeted Player"
+            android:textSize="20sp" />
+        <Switch
+            android:layout_width="match_parent"
+            android:layout_height="73dp"
+            android:id="@+id/striker_remember_target"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:text="@string/striker"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+        <Switch
+            android:layout_width="match_parent"
+            android:layout_height="73dp"
+            android:id="@+id/scorpio_remember_target"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:text="@string/scorpio"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/logView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        tools:ignore="MissingConstraints" />
+
+</LinearLayout>
