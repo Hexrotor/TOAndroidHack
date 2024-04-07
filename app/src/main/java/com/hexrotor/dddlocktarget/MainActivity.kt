@@ -3,12 +3,16 @@ package com.hexrotor.dddlocktarget
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
-import java.lang.StringBuilder
+
 
 class MainActivity : Activity() {
     @SuppressLint("WorldReadableFiles", "UseSwitchCompatOrMaterialCode")
@@ -47,10 +51,22 @@ class MainActivity : Activity() {
             logUtil(log, showToast)
         }
     }
-    fun logUtil(log: String, showToast : Boolean) {
+    private fun logUtil(log: String, showToast : Boolean) {
         val logView : TextView = findViewById(R.id.logView)
         logView.text = log
         Log.d("DDD", log)
         if (showToast) Toast.makeText(this, log, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        getMenuInflater().inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Hexrotor/TOAndroidHack"))
+        startActivity(browserIntent)
+        return true
     }
 }
