@@ -2,5 +2,6 @@
     <string name="app_name">TO Hack</string>
     <string name="scorpio">Scorpio</string>
     <string name="striker">Striker</string>
+    <string name="github">GitHub</string>
     <!-- Strings used for fragments for navigation -->
 </resources>
