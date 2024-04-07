@@ -14,8 +14,8 @@ Note: The server has hack detection, you must **MANUALLY** aim at the target dur
 
 ### Remember Targeted Player
 
-Once you start aimming someone, your target won't lost unless you try to aim at another player, and the target mark will keep on your screen so you can know where is it.
+Once you start aiming someone, your target result won't lose unless you try to aim at another player, and the target mark will keep on your screen so you can track the target.
 
-For Striker, it means you can track someone's location;
+For Striker, you can track target's location. The server has wall check, if you charging behind a wall, will only shoot one valid rocket.
 
-For Scorpio, it means you can anytime shoot your target at anywhere because the aiming result didn't lost.
+For Scorpio, you can track target's location and aim your target at anywhere anytime because the server doesn't have wall check for Scorpio aiming.
