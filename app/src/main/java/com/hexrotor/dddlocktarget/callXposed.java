@@ -1,6 +1,10 @@
 package com.hexrotor.dddlocktarget;
 
+import android.app.Application;
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
@@ -12,32 +16,21 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 public class callXposed implements IXposedHookLoadPackage {
     boolean targetValid = true;
     @Override
-    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
-        if (!loadPackageParam.packageName.equals("com.tankionline.china")) return;
+    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        if (!loadPackageParam.packageName.equals("com.tankionline.china") && !loadPackageParam.packageName.equals("com.tankionline.mobile.production")) {
+            return;
+        }
 
         XSharedPreferences xsp = new XSharedPreferences("com.hexrotor.dddlocktarget", "function_config");
         Log.d("DDD", "Loaded preferences"+xsp.getAll());
-        XposedHelpers.findAndHookMethod("projects.tanks.android.sdk.impl.ChinaSDKService", loadPackageParam.classLoader, "logData", android.content.Context.class, java.lang.String.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                if(param.args[1].toString().contains("initEnterPoint")) {
-                    param.args[1] = "initEnterPoint "+ xsp.getAll();
-                    XposedBridge.log(xsp.getAll().toString());
-                }
-            }
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-            }
-        });
+        createConfigToast(loadPackageParam, xsp);
         setTargetMark(loadPackageParam, xsp.getBoolean("scorpio_remember_target", false) || xsp.getBoolean("striker_remember_target", false));
         final Class<?> LockResult = XposedHelpers.findClass("alternativa.tanks.battle.weapons.aiming.LockResult", loadPackageParam.classLoader);
         //striker
         XposedHelpers.findAndHookMethod("alternativa.tanks.battle.weapons.types.striker.components.StrikerWeapon", loadPackageParam.classLoader, "lockTarget", LockResult, java.lang.Long.class, new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                //执行原方法
+                // Check if the target is valid, required by setTargetMark
                 boolean result = (boolean) XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
                 long targetId = (Long) XposedHelpers.callMethod(methodHookParam.args[0], "getTargetId");
                 targetValid = (boolean) XposedHelpers.callMethod(methodHookParam.thisObject, "isValidTarget", targetId);
@@ -56,11 +49,9 @@ public class callXposed implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("alternativa.tanks.battle.weapons.types.scorpio.components.ScorpioWeapon", loadPackageParam.classLoader, "lockTarget", LockResult, java.lang.Long.class, new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                //执行原方法
                 long targetId = (Long) XposedHelpers.callMethod(methodHookParam.args[0], "getTargetId");
                 targetValid = (boolean) XposedHelpers.callMethod(methodHookParam.thisObject, "isValidTarget", targetId);
                 boolean result = (boolean) XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
-
                 if (xsp.getBoolean("scorpio_lock", false)) {
                     if (xsp.getBoolean("scorpio_remember_target", false)) {
                         return result || targetValid;
@@ -71,18 +62,19 @@ public class callXposed implements IXposedHookLoadPackage {
 
             }
         });
-        final Class<?> TargetSelectionEvent = XposedHelpers.findClass("alternativa.tanks.battle.weapons.aiming.fsm.TargetSelectionEvent", loadPackageParam.classLoader);
-        XposedHelpers.findAndHookMethod("alternativa.tanks.battle.weapons.types.striker.fsm.TargetSelectionState", loadPackageParam.classLoader, "handleChildStateMachineEvent",TargetSelectionEvent , new XC_MethodReplacement() {
-            @Override
-            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                if(xsp.getBoolean("scorpio_lock", false) && methodHookParam.args[0].toString().contains("TargetSelectionEvent$Interrupted")) {
-                    //Log.d("DDD", methodHookParam.args[0].toString());
-                    return null;
-                }
-                //调用原函数
-                return XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
-            }
-        });
+        // Modified this function is meaningless because if your turret is not aiming at the target, the server will detect it as hacking.
+        // This will also break gauss's aiming function.
+//        final Class<?> TargetSelectionEvent = XposedHelpers.findClass("alternativa.tanks.battle.weapons.aiming.fsm.TargetSelectionEvent", loadPackageParam.classLoader);
+//        XposedHelpers.findAndHookMethod("alternativa.tanks.battle.weapons.types.striker.fsm.TargetSelectionState", loadPackageParam.classLoader, "handleChildStateMachineEvent",TargetSelectionEvent , new XC_MethodReplacement() {
+//            @Override
+//            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
+//                if(xsp.getBoolean("scorpio_lock", false) && methodHookParam.args[0].toString().contains("TargetSelectionEvent$Interrupted")) {
+//                    // Avoid aiming charging been interrupted
+//                    return null;
+//                }
+//                return XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
+//            }
+//        });
     }
 
     private void setTargetMark(XC_LoadPackage.LoadPackageParam loadPackageParam, boolean show) {
@@ -90,9 +82,7 @@ public class callXposed implements IXposedHookLoadPackage {
             XposedHelpers.findAndHookMethod("alternativa.tanks.battle.weapons.types.striker.components.StrikerHUD", loadPackageParam.classLoader, "setShowTargetMark", boolean.class, new XC_MethodReplacement() {
                 @Override
                 protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                    //获取StrikerHUD.position.value.x.value
-                    //float xValue = (float) XposedHelpers.getObjectField(XposedHelpers.getObjectField(methodHookParam.thisObject, "position"), "x");
-                    //Log.d("DDD", "StrikerHUD xValue: "+xValue);
+                    // If target is valid, prohibit to hide the target mark
                     if(targetValid) methodHookParam.args[0] = true;
                     return XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
                 }
@@ -106,5 +96,15 @@ public class callXposed implements IXposedHookLoadPackage {
                 }
             });
         }
+    }
+    private void createConfigToast(XC_LoadPackage.LoadPackageParam loadPackageParam, XSharedPreferences xsp) {
+        final Class<?> clazz = XposedHelpers.findClass("android.app.Instrumentation", loadPackageParam.classLoader);
+        XposedHelpers.findAndHookMethod(clazz, "callApplicationOnCreate", Application.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                Context context = (Context) XposedHelpers.callMethod(param.args[0], "getApplicationContext");
+                Toast.makeText(context, loadPackageParam.packageName+xsp.getAll(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
